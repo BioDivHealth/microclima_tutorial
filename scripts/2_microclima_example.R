@@ -1,20 +1,16 @@
 # Microclima tutorial #
 
-
 # 1 - Load packages  ----
-
-install.packages(c(' terra', ' elevatr', 'dplyr', 'RNCEP', 'zoo', 'devtools',
-                   'ncdf4', 'fields', 'Rcpp', 'sf')) 
-
-
+# Download NicheMapR (for macroclimate data) and MicroClima (for modelling) packages
 install.packages("devtools")
 devtools::install_github("ilyamaclean/microclima")
-library(microclima)
-
 devtools::install_github('mrke/NicheMapR')
 "rgdal_show_exportToProj4_warnings"="none"
+# The below packages may be necessary if you're hitting an installation wall 
+#install.packages(c(' terra', ' elevatr', 'dplyr', 'RNCEP', 'zoo', 'devtools',
+#    'ncdf4', 'fields', 'Rcpp', 'sf')) 
 
-library(readr)
+# load libraries
 library(readxl)
 library(tidyverse) 
 library(raster) 
@@ -22,29 +18,21 @@ library(microclima)
 library(NicheMapR)
 library(sp)
 library(sf)
-library(rgdal)
-library(rgeos)
-library(maptools)
 library(terra)
 library(elevatr)
 
-
-# find out r version
-R.Version()$version.string
-
-#### 2 - LOAD  GPS  DATA ----
+# 2 - Load  GPS  data ----
 # read in GPS point data - insert your own here
 # read in GPS point data from xlsx file
 hyde_coords <- read_excel("data/hyde_park_points.xlsx")
 str(hyde_coords)
 
-####  3 - RUN MODEL ----
-#download global climates dataset from nichemapr (only run if not downloaded onto computer! huge file)
+# 3 - Run Microclima model ----
+#download global climates dataset from NichemapT 
+#(only run if not downloaded onto computer! huge file so only need to do it once)
 get.global.climate()
 
-
-# extract lon and lat from tomst coords (alter to fit your own data)
-
+# extract lon and lat from coords file (alter to fit your own data)
 coordinates(hyde_coords) <- c("lon", "lat") 
 proj4string(hyde_coords) <- CRS("+proj=longlat +datum=WGS84")
 xy <-spTransform(hyde_coords,CRS= "+proj=utm +zone=7 +datum=WGS84 +units=m +no_defs")
@@ -52,17 +40,17 @@ xy <-spTransform(hyde_coords,CRS= "+proj=utm +zone=7 +datum=WGS84 +units=m +no_d
 # check extents
 xy 
 
-#### 4 - Microclima Auto DEM ----
-# download raster for hydrpark from Mapzen 
+# 4 - Microclima Auto DEM ----
+# download raster for hydepark from Mapzen 
 hyde_auto_dem <- get_elev_raster(locations = xy,
                                 prj = "+proj=utm +zone=7 +datum=WGS84 +units=m +no_defs",
                                 z = 14,  clip = "tile")
 
-# turn dem into dataframe
+# turn DEM into dataframe
 hyde_dem_df <- data.frame(coordinates(hyde_auto_dem),
                               elevation = getValues(hyde_auto_dem))
 
-# plot dem and gps points to check they align 
+# overlay DEM and GPS points to check they align 
 plot(hyde_auto_dem)
 points(xy)
 
@@ -81,14 +69,14 @@ ggplot(hyde_dem_df, aes(x = x,
 
 # Microclimate model: alter to your own specifications here to include your date range, surface, habitat etc
 # In this case it is hourly predictions over a day at 0cm above the surface in an open shrubland
-library(terra)
-hyde_auto_dem <- rast(hyde_auto_dem)  # convert to SpatRaster
+
+hyde_auto_dem <- rast(hyde_auto_dem)  # convert to terra SpatRaster object 
 
 hyde_surf <- runauto(r = hyde_auto_dem,
                     dstart = "01/09/2022",
                     dfinish = "02/09/2022",
                     hgt = 0, # 0cm aka surface temperature
-                    l = NA,
+                    l = NA, 
                     x = NA,
                     habitat = "Urban and built-up", 
                     r.is.dem = TRUE,
@@ -96,16 +84,14 @@ hyde_surf <- runauto(r = hyde_auto_dem,
                     summarydata = TRUE,
                     plot.progress = FALSE)
 
-# save mean data
+# extract mean surface temperature data 
 hyde_surf_mean <- hyde_surf$tmean   
 
-# plot mean data with gps points to check they align 
+# plot surface temperature mean data with gps points to check they align 
 plot(hyde_surf_mean)
 points(xy)
 
-
 # create tiff of full pixel model - save to your own filepath!
-# Use terra::writeRaster for SpatRaster objects
 terra::writeRaster(hyde_surf_mean, 'data/sep_hyde_surf_mean.tif', 
                    filetype = 'GTiff', 
                    overwrite = TRUE)
@@ -114,7 +100,7 @@ terra::writeRaster(hyde_surf_mean, 'data/sep_hyde_surf_mean.tif',
 #hyde_surf_mean <- terra::rast(hyde_surf_mean)
 
 
-#### 5: OPTIONAL: Interactive 3D plot ----
+# 5: Optional: Interactive 3D plot ----
 require(plotly)
 zrange<-list(range = c(0, 70)) # adjust these to suit your visualation - by metres elev
 xrange<-list(range = c(700, 0))

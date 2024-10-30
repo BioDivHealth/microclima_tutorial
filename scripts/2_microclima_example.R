@@ -34,8 +34,9 @@ R.Version()$version.string
 
 #### 2 - LOAD  GPS  DATA ----
 # read in GPS point data - insert your own here
-tomst_coords <- read_xlsx("filepath/example/points.xlsx")
-str(tomst_coords)
+# read in GPS point data from xlsx file
+hyde_coords <- read_excel("data/hyde_park_points.xlsx")
+str(hyde_coords)
 
 ####  3 - RUN MODEL ----
 #download global climates dataset from nichemapr (only run if not downloaded onto computer! huge file)
@@ -43,32 +44,30 @@ get.global.climate()
 
 
 # extract lon and lat from tomst coords (alter to fit your own data)
-xy <- tomst_coords[,c(2,5,6)]
-xy <- na.omit(xy)
-str(xy) 
-coordinates(xy) <- c("Lon", "Lat") 
-proj4string(xy) <- CRS("+proj=longlat +datum=WGS84")
-xy <-spTransform(xy,CRS= "+proj=utm +zone=7 +datum=WGS84 +units=m +no_defs")
+
+coordinates(hyde_coords) <- c("lon", "lat") 
+proj4string(hyde_coords) <- CRS("+proj=longlat +datum=WGS84")
+xy <-spTransform(hyde_coords,CRS= "+proj=utm +zone=7 +datum=WGS84 +units=m +no_defs")
 
 # check extents
 xy 
 
 #### 4 - Microclima Auto DEM ----
 # download raster for QHI from Mapzen 
-qhi_auto_dem <- get_elev_raster(locations = xy,
+hyde_auto_dem <- get_elev_raster(locations = xy,
                                 prj = "+proj=utm +zone=7 +datum=WGS84 +units=m +no_defs",
                                 z = 13,  clip = "tile")
 
 # turn dem into dataframe
-herschel_dem_df <- data.frame(coordinates(qhi_auto_dem),
-                              elevation = getValues(qhi_auto_dem))
+hyde_dem_df <- data.frame(coordinates(hyde_auto_dem),
+                              elevation = getValues(hyde_auto_dem))
 
 # plot dem and gps points to check they align 
-plot(qhi_auto_dem)
+plot(hyde_auto_dem)
 points(xy)
 
 # Plot elevation data
-ggplot(herschel_dem_df, aes(x = x,
+ggplot(hyde_dem_df, aes(x = x,
                             y = y,
                             fill = elevation)) +
   geom_raster() +
@@ -82,9 +81,9 @@ ggplot(herschel_dem_df, aes(x = x,
 
 # Microclimate model: alter to your own specifications here to include your date range, surface, habitat etc
 # In this case it is hourly predictions over a month at 0cm above the surface in an open shrubland
-qhi_surf <- runauto(r = qhi_auto_dem,
+hyde_surf <- runauto(r = hyde_auto_dem,
                     dstart = "01/09/2022",
-                    dfinish = "30/09/2022",
+                    dfinish = "10/09/2022",
                     hgt = 0, # 0cm aka surface temperature
                     l = NA,
                     x = NA,
@@ -95,19 +94,20 @@ qhi_surf <- runauto(r = qhi_auto_dem,
                     plot.progress = FALSE)
 
 # save mean data
-qhi_surf_mean <- qhi_surf$tmean   
+hyde_surf_mean <- hyde_surf$tmean   
 
 # plot mean data with gps points to check they align 
-plot(qhi_surf_mean)
+plot(hyde_surf_mean)
 points(xy)
 
 
 # create tiff of full pixel model - save to your own filepath!
-raster::writeRaster(qhi_surf_mean, 'filepath/example/sep_qhi_surf_mean.tif', 
+raster::writeRaster(hyde_surf_mean, 'data/sep_hyde_surf_mean.tif', 
                     format = 'GTiff', 
                     overwrite = TRUE)
 
-qhi_surf_mean <- raster('filepath/example/sep_qhi_surf_mean.tif')
+# read it in at a later occasion
+#hyde_surf_mean <- raster('data/sep_hyde_surf_mean.tif')
 
 
 #### 5: OPTIONAL: Interactive 3D plot ----
@@ -116,8 +116,8 @@ zrange<-list(range = c(0, 500))
 xrange<-list(range = c(700, 0))
 yrange<-list(range = c(500, 0)) 
 
-fig <- plot_ly(z = ~is_raster(qhi_auto_dem)) %>%
-  add_surface(surfacecolor = ~is_raster(qhi_surf_mean)) %>%
+fig <- plot_ly(z = ~is_raster(hyde_auto_dem)) %>%
+  add_surface(surfacecolor = ~is_raster(hyde_surf_mean)) %>%
   layout(scene = list(zaxis = zrange)) %>% 
   layout(xaxis = list(xrange = "reversed"))  %>% 
   layout(yaxis = list(yrange = "reversed"))  %>% 

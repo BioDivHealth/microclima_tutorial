@@ -56,7 +56,7 @@ xy
 # download raster for hydrpark from Mapzen 
 hyde_auto_dem <- get_elev_raster(locations = xy,
                                 prj = "+proj=utm +zone=7 +datum=WGS84 +units=m +no_defs",
-                                z = 13,  clip = "tile")
+                                z = 14,  clip = "tile")
 
 # turn dem into dataframe
 hyde_dem_df <- data.frame(coordinates(hyde_auto_dem),
@@ -80,17 +80,17 @@ ggplot(hyde_dem_df, aes(x = x,
   theme(axis.text = element_text(angle = 45, size = 8))
 
 # Microclimate model: alter to your own specifications here to include your date range, surface, habitat etc
-# In this case it is hourly predictions over a month at 0cm above the surface in an open shrubland
+# In this case it is hourly predictions over a day at 0cm above the surface in an open shrubland
 library(terra)
 hyde_auto_dem <- rast(hyde_auto_dem)  # convert to SpatRaster
 
 hyde_surf <- runauto(r = hyde_auto_dem,
                     dstart = "01/09/2022",
-                    dfinish = "10/09/2022",
+                    dfinish = "02/09/2022",
                     hgt = 0, # 0cm aka surface temperature
                     l = NA,
                     x = NA,
-                    habitat = "Open shrublands", 
+                    habitat = "Urban and built-up", 
                     r.is.dem = TRUE,
                     coastal = FALSE,
                     summarydata = TRUE,
@@ -116,7 +116,7 @@ terra::writeRaster(hyde_surf_mean, 'data/sep_hyde_surf_mean.tif',
 
 #### 5: OPTIONAL: Interactive 3D plot ----
 require(plotly)
-zrange<-list(range = c(0, 70))
+zrange<-list(range = c(0, 70)) # adjust these to suit your visualation - by metres elev
 xrange<-list(range = c(700, 0))
 yrange<-list(range = c(500, 0)) 
 

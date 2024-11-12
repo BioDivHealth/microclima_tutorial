@@ -68,7 +68,7 @@ ggplot(hyde_dem_df, aes(x = x,
   theme(axis.text = element_text(angle = 45, size = 8))
 
 # Microclimate model: alter to your own specifications here to include your date range, surface, habitat etc
-# In this case it is hourly predictions over a day at 0cm above the surface in an open shrubland
+# In this case it is hourly predictions over a day at 0cm above the surface in urban environment
 
 hyde_auto_dem <- rast(hyde_auto_dem)  # convert to terra SpatRaster object 
 
@@ -97,7 +97,7 @@ terra::writeRaster(hyde_surf_mean, 'data/sep_hyde_surf_mean.tif',
                    overwrite = TRUE)
 
 # read it in at a later occasion
-#hyde_surf_mean <- terra::rast(hyde_surf_mean)
+#hyde_surf_mean <- terra::rast("data/sep_hyde_surf_mean.tif")
 
 
 # 5: Optional: Interactive 3D plot ----

@@ -61,11 +61,11 @@ head(micropoint$weather)
 # run model 5 cm above ground with subset values (takes ~10 seconds)
 plot(rast(dtmcaerth))
 
-# Note here - monthly valued are supplied. Ask Ilya about this 
+# Note here - monthly valued are supplied
 mout <- runmicro(micropoint, reqhgt = 0.05, vegp, soilc, dtmcaerth)
 attributes(mout)
 
-# Plot air temperatures on hottest hour in 
+# Plot air temperatures on hottest hour on a particular day
 # micropoint (2017-06-20 13:00:00 UTC)
 mypal <- colorRampPalette(c("darkblue", "blue", "green", "yellow", 
                             "orange",  "red"))(255)

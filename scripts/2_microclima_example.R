@@ -95,20 +95,20 @@ points(xy)
 terra::writeRaster(hyde_surf_mean, 'data/sep_hyde_surf_mean.tif', 
                    filetype = 'GTiff', 
                    overwrite = TRUE)
-
+ 
 # read it in at a later occasion
 #hyde_surf_mean <- terra::rast("data/sep_hyde_surf_mean.tif")
 
 
 # 5: Optional: Interactive 3D plot ----
 require(plotly)
-zrange<-list(range = c(0, 70)) # adjust these to suit your visualation - by metres elev
+zrange<-list(range = c(0, 30)) # adjust these to suit your visualation - by metres elev
 xrange<-list(range = c(700, 0))
 yrange<-list(range = c(500, 0)) 
 
 fig <- plot_ly(z = ~is_raster(hyde_auto_dem)) %>%
   add_surface(surfacecolor = ~is_raster(hyde_surf_mean)) %>%
-  layout(scene = list(zaxis = zrange)) %>% 
+ # layout(scene = list(zaxis = zrange)) %>% 
   layout(xaxis = list(xrange = "reversed"))  %>% 
   layout(yaxis = list(yrange = "reversed"))  %>% 
   layout(scene = list(xaxis = list(title = "Lat"), yaxis = list(title = "Lon"),

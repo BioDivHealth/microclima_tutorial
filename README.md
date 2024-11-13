@@ -1,8 +1,8 @@
-# MicroClima Tutorial - NHM November 6th 2024
+# MicroClima Tutorial - NHM November 13th 2024
 
 ## Overview 
 
-Microclima is an R package developed by Ilya Maclean that downscales gridded climate data and models fine-scale local variations in temperature. The model pulls in data on coastal proximity, radiation, IUCN habitat type, radiation, wind speed, elevation, albedo and frost hours. There are various spin-off packages in what I refer to as the 'MicroClima Multiverse'. We'll focus on these three:
+Microclima is an R package developed by Ilya Maclean that downscales gridded climate data and models fine-scale local variations in temperature. The model pulls in data on coastal proximity, radiation, IUCN habitat type, radiation, wind speed, elevation, albedo and frost hours. There are various spin-off packages in what I refer to as the 'MicroClima Cinematic Multiverse'. We'll focus on these three:
 
   1) **MicroClima**: The original model. You can either load your own DEM or choose a location and have a DEM imported online from MapZen. You can run for any time period and the output will give you a raster map with microclimate variables at the height from surface you have selected. 
   2) **MicroPoints**: This is similar to microclima but allows you to run microclimate models for discrete points, and therefore runs a lot more efficiently. You can easily get microclimate time series data from this package. 
